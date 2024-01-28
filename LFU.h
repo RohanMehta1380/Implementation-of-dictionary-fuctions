@@ -1,65 +1,77 @@
-#include<iostream>
-#include<string>
-#include<stdlib.h>
-#include<vector>
-#include<fstream>
-#include<unistd.h>
-#include<conio.h>
-#define ALPHABETS 26
+// #ifndef LFU_H
+// #define LFU_H
+
+// #include <string>
+// #include <unordered_map>
+// using namespace std;
+
+// class LFUCache {
+// private:
+//     unordered_map<string, int> frequency;
+//     int capacity;
+
+// public:
+//     LFUCache(int cap) : capacity(cap) {}
+//     void put(string word) {
+//         frequency[word]++;
+//     }
+
+//     string getLFUWord() {
+//         string lfuWord;
+//         int minFreq = INT_MAX;
+
+//         for (const auto& pair : frequency) {
+//             if (pair.second < minFreq) {
+//                 minFreq = pair.second;
+//                 lfuWord = pair.first;
+//             }
+//         }
+
+//         return lfuWord;
+//     }
+// };
+
+// #endif // LFU_H
+
+#ifndef LFU_H
+#define LFU_H
+
+#include <string>
+#include <unordered_map>
+#include <list>
+#include <algorithm>
 using namespace std;
+
 class LFUCache {
+private:
+    unordered_map<string, int> frequency;
+    list<string> lfuList;
+    int capacity;
+
 public:
+    LFUCache(int cap) : capacity(cap) {}
 
-	int siz = 0;
-	int min_freq;
-	int capacity;
-	unordered_map <int, pair<int, int>> cache; //key to {value,freq};
-	unordered_map <int, list<int>::iterator> freqIter; //key to list iterator;
-	unordered_map <int, list<int>>  freq;  //freq to key list;
+    void put(string word) {
+        // Increment frequency
+        frequency[word]++;
+        
+        // Update the list to reflect new frequency
+        lfuList.remove(word);
+        auto it = find_if(lfuList.begin(), lfuList.end(), 
+                          [this, &word](const string& key) { return frequency[key] > frequency[word]; });
+        lfuList.insert(it, word);
 
-	LFUCache(int n) {
-		capacity = n;
-	}
+        // Evict if necessary
+        if (lfuList.size() > capacity) {
+            string leastFrequent = lfuList.back();
+            lfuList.pop_back();
+            frequency.erase(leastFrequent);
+        }
+    }
 
-	int get(int key) {
-		if (cache.count(key) == 0) {
-			return -1;
-		}
-		else {
-			freq[cache[key].second].erase(freqIter[key]);
-			cache[key].second++;
-			freq[cache[key].second].push_back(key);
-			freqIter[key] = --freq[cache[key].second].end();
-			if (freq[min_freq].size() == 0)
-				min_freq++;
-			return cache[key].first;
-		}
-	}
-
-	void put(int key, int value) {
-		if (cache.find(key) != cache.end()) {
-			freq[cache[key].second].erase(freqIter[key]);
-			cache[key].second++;
-			freq[cache[key].second].push_back(key);
-			freqIter[key] = --freq[cache[key].second].end();
-			if (freq[min_freq].size() == 0)
-				min_freq++;
-			cache[key].first = value;
-
-		}
-		else {
-			if (siz == capacity) {
-				cache.erase(freq[min_freq].front());
-				freqIter.erase(freq[min_freq].front());
-				freq[min_freq].pop_front();
-				siz--;
-			}
-			cache[key] = {value, 1};
-			freq[1].push_back(key);
-			freqIter[key] = --freq[1].end();
-			min_freq = 1;
-			siz++;
-		}
-	}
-
+    string getLFUWord() {
+        return lfuList.back();
+    }
 };
+
+#endif // LFU_H
