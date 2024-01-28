@@ -1,33 +1,57 @@
-#include<iostream>
-#include<string>
-#include<stdlib.h>
-#include<vector>
-#include<fstream>
-#include<unistd.h>
-#include<conio.h>
-#define ALPHABETS 26
+// #ifndef TRIE_H
+// #define TRIE_H
+
+// #include <string>
+// using namespace std;
+
+// #define ALPHABETS 26
+
+// class TrieNode {
+// public:
+//     string meaning;
+//     TrieNode* children[ALPHABETS];
+
+//     TrieNode() : meaning("") {
+//         for (int i = 0; i < ALPHABETS; i++) {
+//             children[i] = NULL;
+//         }
+//     }
+
+
+// };
+
+// #endif // TRIE_H
+
+#ifndef TRIE_H
+#define TRIE_H
+
+#include <string>
+#include <vector>
 using namespace std;
-class TrieNode
-{
-	string meaning;
-	TrieNode *children[ALPHABETS];
-	friend class Dictionary;
-	public:
-		TrieNode();
+
+#define ALPHABETS 26
+
+class TrieNode {
+public:
+    string meaning;
+    TrieNode* children[ALPHABETS];
+
+    TrieNode() : meaning("") {
+        for (int i = 0; i < ALPHABETS; i++) {
+            children[i] = NULL;
+        }
+    }
+
+    void collectAllWords(string prefix, vector<string>& words) {
+        if (!meaning.empty()) {
+            words.push_back(prefix);
+        }
+        for (int i = 0; i < ALPHABETS; i++) {
+            if (children[i] != NULL) {
+                children[i]->collectAllWords(prefix + char(i + 'a'), words);
+            }
+        }
+    }
 };
 
-class Dictionary
-{
-	TrieNode *root;
-	
-	public:
-		Dictionary();
-		bool isEmpty(TrieNode*);
-		TrieNode*removeUtil(TrieNode*,string,int);
-		TrieNode* clearDictionary(TrieNode*);
-		void remove(string);
-		void insert(string,string);
-		void search(string);
-		void autoComplete(TrieNode*,string,vector<string>&);
-		~Dictionary();
-};
+#endif // TRIE_H
